@@ -1,8 +1,12 @@
 package entities;
 
+import javax.persistence.*;
 import java.util.Date;
 
+@Entity
 public class Booking {
+    @Id
+    @GeneratedValue
     private int id;
     private String guestFirstName;
     private String guestLastName;
@@ -10,13 +14,17 @@ public class Booking {
     private Date checkOutDate;
     private int numberOfAdults;
     private int numberOfChildren;
-    private int roomId;
-    private int statusId;
+    @ManyToOne
+    @JoinColumn(name = "room_id")
+    private Room room;
+    @ManyToOne
+    @JoinColumn(name = "status_id")
+    private Status status;
 
     public Booking() {
     }
 
-    public Booking(int id, String guestFirstName, String guestLastName, Date checkInDate, Date checkOutDate, int numberOfAdults, int numberOfChildren, int roomId, int statusId) {
+    public Booking(int id, String guestFirstName, String guestLastName, Date checkInDate, Date checkOutDate, int numberOfAdults, int numberOfChildren, Room room, Status status) {
         this.id = id;
         this.guestFirstName = guestFirstName;
         this.guestLastName = guestLastName;
@@ -24,9 +32,10 @@ public class Booking {
         this.checkOutDate = checkOutDate;
         this.numberOfAdults = numberOfAdults;
         this.numberOfChildren = numberOfChildren;
-        this.roomId = roomId;
-        this.statusId = statusId;
+        this.room = room;
+        this.status = status;
     }
+
     public int getId() {
         return id;
     }
@@ -83,19 +92,27 @@ public class Booking {
         this.numberOfChildren = numberOfChildren;
     }
 
-    public int getRoomId() {
-        return roomId;
+    public Room getRoom() {
+        return room;
     }
 
-    public void setRoomId(int roomId) {
-        this.roomId = roomId;
+    public int getRoomId() {
+        return room.getId();
+    }
+
+    public void setRoomId(Room room) {
+        this.room = room;
+    }
+
+    public Status getStatus() {
+        return status;
     }
 
     public int getStatusId() {
-        return statusId;
+        return status.getId();
     }
 
-    public void setStatusId(int statusId) {
-        this.statusId = statusId;
+    public void setStatusId(Status status) {
+        this.status = status;
     }
 }

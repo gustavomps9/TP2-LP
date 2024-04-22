@@ -1,17 +1,20 @@
-import com.formdev.flatlaf.FlatDarculaLaf;
-import com.formdev.flatlaf.FlatIntelliJLaf;
 import com.formdev.flatlaf.FlatLightLaf;
-import com.formdev.flatlaf.themes.FlatMacLightLaf;
+import database.dao.BookingDao;
+import database.dao.RoomDao;
+import database.dao.StatusDao;
+import entities.Room;
+import entities.Status;
 import views.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 
 public class BookingApplication extends JFrame {
-    private CardLayout cardLayout;
-    private JPanel cardsPanel;
-    private JButton roomsButton;
-    private JButton bookingsButton;
+    private final CardLayout cardLayout;
+    private final JPanel cardsPanel;
+    private final JButton roomsButton;
+    private final JButton bookingsButton;
 
     public BookingApplication() {
         // Set up the main frame
@@ -43,7 +46,7 @@ public class BookingApplication extends JFrame {
         // Add individual view panels
         SplashScreenView splashScreenView = new SplashScreenView();
         RoomListView roomListView = new RoomListView(cardLayout, cardsPanel);
-        RoomFormView RoomFormView = new RoomFormView(cardLayout, cardsPanel);
+        RoomFormView RoomFormView = new RoomFormView(cardLayout, cardsPanel, new Room());
         BookingFormView bookingFormView = new BookingFormView(cardLayout, cardsPanel);
         BookingListView bookingListView = new BookingListView(cardLayout, cardsPanel);
 
@@ -63,30 +66,52 @@ public class BookingApplication extends JFrame {
         cardLayout.show(cardsPanel, "Splash");
     }
 
-    private void showHome() {
-        cardLayout.show(cardsPanel, "Home");
-    }
-
     private void showRoomList() {
         cardLayout.show(cardsPanel, "Rooms");
     }
 
-    private void showRoomForm() {
-        cardLayout.show(cardsPanel, "RoomForm");
-    }
 
     private void showBookingList() {
         cardLayout.show(cardsPanel, "Bookings");
     }
 
-    private void showBookingForm() {
-        cardLayout.show(cardsPanel, "BookingForm");
-    }
 
     public static void main(String[] args) {
+        RoomDao roomDao = new RoomDao();
+        BookingDao bookingDao = new BookingDao();
+        StatusDao statusDao = new StatusDao();
+
+        if (statusDao.getAll().isEmpty()) {
+            createSampleData(roomDao, statusDao);
+        }
+
         //FlatLightLaf.setup();
         SwingUtilities.invokeLater(() -> {
             new BookingApplication().setVisible(true);
         });
+    }
+
+    private static void createSampleData(RoomDao roomDao, StatusDao statusDao) {
+        List<Room> rooms = List.of(
+                new Room(101, 1, 0, 34.00f),
+                new Room(102, 2, 0, 48.00f),
+                new Room(103, 2, 1, 52.00f),
+                new Room(104, 2, 2, 64.00f),
+                new Room(201, 1, 0, 34.00f),
+                new Room(202, 2, 0, 48.00f),
+                new Room(203, 2, 1, 52.00f),
+                new Room(204, 2, 2, 64.00f),
+                new Room(301, 4, 2, 107.00f),
+                new Room(302, 4, 2, 107.00f)
+        );
+        roomDao.saveAll(rooms);
+
+        List<Status> statuses = List.of(
+                new Status("Booked"),
+                new Status("Checked In"),
+                new Status("Checked Out"),
+                new Status("Cancelled")
+        );
+        statusDao.saveAll(statuses);
     }
 }

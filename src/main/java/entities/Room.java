@@ -1,6 +1,14 @@
 package entities;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import java.util.Objects;
+
+@Entity
 public class Room {
+    @Id
+    @GeneratedValue
     private int id;
     private int roomNumber;
     private int adultsCapacity;
@@ -8,6 +16,13 @@ public class Room {
     private float price;
 
     public Room(){
+    }
+
+    public Room(int roomNumber, int adultsCapacity, int childrenCapacity, float price){
+        this.roomNumber = roomNumber;
+        this.adultsCapacity = adultsCapacity;
+        this.childrenCapacity = childrenCapacity;
+        this.price = price;
     }
 
     public Room(int id, int roomNumber, int adultsCapacity, int childrenCapacity, float price){
@@ -56,5 +71,18 @@ public class Room {
 
     public void setPrice(float price) {
         this.price = price;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Room room = (Room) o;
+        return roomNumber == room.roomNumber && adultsCapacity == room.adultsCapacity && childrenCapacity == room.childrenCapacity && Float.compare(price, room.price) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(roomNumber, adultsCapacity, childrenCapacity, price);
     }
 }

@@ -1,10 +1,21 @@
 package entities;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+
+@Entity
 public class Status {
+    @Id
+    @GeneratedValue
     private int id;
     private String state;
 
     public Status() {
+    }
+
+    public Status(String state) {
+        this.state = state;
     }
 
     public Status(int id, String state) {

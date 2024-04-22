@@ -1,0 +1,20 @@
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+
+<hibernate-configuration>
+    <session-factory>
+        <property name="hibernate.connection.driver_class">org.postgresql.Driver</property>
+        <property name="hibernate.dialect">org.hibernate.dialect.PostgreSQL82Dialect</property>
+        <property name="hibernate.connection.url">jdbc:postgresql://localhost:5432/booking</property>
+        <property name="hibernate.connection.username">postgres</property>
+        <property name="hibernate.connection.password">12345678pP</property>
+        <property name="show_sql">true</property>
+        <property name="hbm2ddl.auto">update</property>
+
+        <!-- Mapping to classes -->
+        <mapping class="entities.Booking"/>
+        <mapping class="entities.Room"/>
+        <mapping class="entities.Status"/>
+    </session-factory>
+</hibernate-configuration>
