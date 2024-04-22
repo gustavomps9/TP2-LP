@@ -1,9 +1,14 @@
+package entities;
+
 public class Room {
     private int id;
     private int roomNumber;
     private int adultsCapacity;
     private int childrenCapacity;
     private float price;
+
+    public Room(){
+    }
 
     public Room(int id, int roomNumber, int adultsCapacity, int childrenCapacity, float price){
         this.id = id;

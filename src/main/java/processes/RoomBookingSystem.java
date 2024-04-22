@@ -1,3 +1,8 @@
+package processes;
+
+import entities.Booking;
+import entities.Room;
+
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;

@@ -1,6 +1,11 @@
+package entities;
+
 public class Status {
     private int id;
     private String state;
+
+    public Status() {
+    }
 
     public Status(int id, String state) {
         this.id = id;

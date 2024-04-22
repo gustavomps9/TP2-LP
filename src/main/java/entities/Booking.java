@@ -1,3 +1,5 @@
+package entities;
+
 import java.util.Date;
 
 public class Booking {
@@ -10,6 +12,9 @@ public class Booking {
     private int numberOfChildren;
     private int roomId;
     private int statusId;
+
+    public Booking() {
+    }
 
     public Booking(int id, String guestFirstName, String guestLastName, Date checkInDate, Date checkOutDate, int numberOfAdults, int numberOfChildren, int roomId, int statusId) {
         this.id = id;
