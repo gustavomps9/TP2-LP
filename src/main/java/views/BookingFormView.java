@@ -1,9 +1,16 @@
 package views;
 
+import database.dao.BookingDao;
+import entities.Booking;
+import javassist.Loader;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class BookingFormView extends JPanel {
     private JTextField guestFirstNameField;
@@ -27,7 +34,7 @@ public class BookingFormView extends JPanel {
         add(new JLabel("Guest First Name:"), gbc);
 
         gbc.gridx = 1;
-        guestFirstNameField = new JTextField();
+        guestFirstNameField = new JTextField(20); // Aumenta o número de colunas para aumentar a largura
         add(guestFirstNameField, gbc);
 
         // Guest Last Name
@@ -36,7 +43,7 @@ public class BookingFormView extends JPanel {
         add(new JLabel("Guest Last Name:"), gbc);
 
         gbc.gridx = 1;
-        guestLastNameField = new JTextField();
+        guestLastNameField = new JTextField(20); // Aumenta o número de colunas para aumentar a largura
         add(guestLastNameField, gbc);
 
         // Check-In Date
@@ -96,6 +103,28 @@ public class BookingFormView extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 System.out.println("Booking Form Submitted");
                 // Logic to handle booking submission
+                Booking booking = new Booking();
+                booking.setGuestFirstName(guestFirstNameField.getText());
+                booking.setGuestLastName(guestLastNameField.getText());
+                SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+
+                try{
+                    Date checkInDate = dateFormat.parse(checkInDateField.getText());
+                    booking.setCheckInDate(checkInDate);
+                    Date checkOutDate = dateFormat.parse(checkOutDateField.getText());
+                    booking.setCheckOutDate(checkOutDate);
+                } catch (ParseException ex) {
+                    ex.printStackTrace();
+                    // Lidar com o erro de parsing da data, se necessário
+                    return;
+                }
+                booking.setNumberOfAdults((int) numberOfAdultsSpinner.getValue());
+                booking.setNumberOfChildren((int) numberOfChildrenSpinner.getValue());
+
+                BookingDao bookingDao = new BookingDao();
+                bookingDao.save(booking);
+                System.out.println("Booking saved to database");
+                clearForm();
             }
         });
 
@@ -104,7 +133,19 @@ public class BookingFormView extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 System.out.println("Booking Form Cancelled");
                 cardLayout.show(parentPanel, "Bookings"); // Return to BookingListView
+                clearForm();
+
             }
         });
     }
+
+    public void clearForm() {
+        guestFirstNameField.setText("");
+        guestLastNameField.setText("");
+        checkInDateField.setText("");
+        checkOutDateField.setText("");
+        numberOfAdultsSpinner.setValue(1);
+        numberOfChildrenSpinner.setValue(0);
+    }
 }
+
