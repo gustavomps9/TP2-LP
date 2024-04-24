@@ -24,6 +24,24 @@ public class RoomDao {
         return room;
     }
 
+    public Room getByNumber(int number) {
+        Session session = HibernateUtil.getSession();
+        Query<Room> query = session.createQuery("from Room where roomNumber = :number", Room.class);
+        query.setParameter("number", number);
+        Room room = query.uniqueResult();
+        session.close();
+        return room;
+    }
+
+    public boolean existByNumber(int number) {
+        Session session = HibernateUtil.getSession();
+        Query<Room> query = session.createQuery("from Room where roomNumber = :number", Room.class);
+        query.setParameter("number", number);
+        List<Room> rooms = query.list();
+        session.close();
+        return !rooms.isEmpty();
+    }
+
     public void save(Room room) {
         Transaction transaction = null;
         Session session = null;

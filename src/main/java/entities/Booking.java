@@ -1,5 +1,8 @@
 package entities;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import javax.persistence.*;
 import java.util.Date;
 
@@ -22,6 +25,27 @@ public class Booking {
     private Status status;
 
     public Booking() {
+    }
+
+    public Booking(String guestFirstName, String guestLastName, int numberOfAdults, int numberOfChildren, Room room, Status status) {
+        this.guestFirstName = guestFirstName;
+        this.guestLastName = guestLastName;
+        this.numberOfAdults = numberOfAdults;
+        this.numberOfChildren = numberOfChildren;
+        this.room = room;
+        this.status = status;
+    }
+
+    public Booking(String guestFirstName, String guestLastName, Date checkInDate, Date checkOutDate, int numberOfAdults, int numberOfChildren, Room room, Status status) {
+        this.id = id;
+        this.guestFirstName = guestFirstName;
+        this.guestLastName = guestLastName;
+        this.checkInDate = checkInDate;
+        this.checkOutDate = checkOutDate;
+        this.numberOfAdults = numberOfAdults;
+        this.numberOfChildren = numberOfChildren;
+        this.room = room;
+        this.status = status;
     }
 
     public Booking(int id, String guestFirstName, String guestLastName, Date checkInDate, Date checkOutDate, int numberOfAdults, int numberOfChildren, Room room, Status status) {

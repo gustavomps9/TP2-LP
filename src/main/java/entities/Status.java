@@ -7,7 +7,6 @@ import javax.persistence.Id;
 @Entity
 public class Status {
     @Id
-    @GeneratedValue
     private int id;
     private String state;
 
