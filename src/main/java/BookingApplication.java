@@ -2,6 +2,7 @@ import com.formdev.flatlaf.FlatLightLaf;
 import database.dao.BookingDao;
 import database.dao.RoomDao;
 import database.dao.StatusDao;
+import entities.Booking;
 import entities.Room;
 import entities.Status;
 import views.*;
@@ -46,8 +47,8 @@ public class BookingApplication extends JFrame {
         // Add individual view panels
         SplashScreenView splashScreenView = new SplashScreenView();
         RoomListView roomListView = new RoomListView(cardLayout, cardsPanel);
-        RoomFormView RoomFormView = new RoomFormView(cardLayout, cardsPanel, new Room());
-        BookingFormView bookingFormView = new BookingFormView(cardLayout, cardsPanel);
+        RoomFormView RoomFormView = new RoomFormView(cardLayout, cardsPanel, null);
+        BookingFormView bookingFormView = new BookingFormView(cardLayout, cardsPanel, null);
         BookingListView bookingListView = new BookingListView(cardLayout, cardsPanel);
 
         cardsPanel.add(splashScreenView, "Splash");
@@ -81,6 +82,10 @@ public class BookingApplication extends JFrame {
         BookingDao bookingDao = new BookingDao();
         StatusDao statusDao = new StatusDao();
 
+//        bookingDao.deleteAll();
+//        roomDao.deleteAll();
+//        statusDao.deleteAll();
+
         if (statusDao.getAll().isEmpty()) {
             createSampleData(roomDao, statusDao);
         }
@@ -107,10 +112,10 @@ public class BookingApplication extends JFrame {
         roomDao.saveAll(rooms);
 
         List<Status> statuses = List.of(
-                new Status("Booked"),
-                new Status("Checked In"),
-                new Status("Checked Out"),
-                new Status("Cancelled")
+                new Status(1, "Booked"),
+                new Status(2, "Checked In"),
+                new Status(3, "Checked Out"),
+                new Status(4, "Cancelled")
         );
         statusDao.saveAll(statuses);
     }

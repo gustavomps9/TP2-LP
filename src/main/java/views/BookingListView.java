@@ -8,10 +8,12 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 public class BookingListView extends JPanel {
     private static final String[] columnNames = {"Guest First Name", "Guest Last Name", "Room", "Check-In", "Check-Out", "Status"};
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
     private final JTable table;
     private final JButton addButton;
 
@@ -37,12 +39,25 @@ public class BookingListView extends JPanel {
             data[i][0] = booking.getGuestFirstName();
             data[i][1] = booking.getGuestLastName();
             data[i][2] = (booking.getRoom() != null) ? booking.getRoom().getRoomNumber() : "";
-            data[i][3] = booking.getCheckInDate();
-            data[i][4] = booking.getCheckOutDate();
-            data[i][5] = booking.getStatus();
+            data[i][3] = dateFormat.format(booking.getCheckInDate());
+            data[i][4] = dateFormat.format(booking.getCheckOutDate());
+            data[i][5] = (booking.getStatus() != null) ? booking.getStatus().getState() : "";
         }
 
         table = new JTable(data, columnNames);
+        table.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                int row = table.rowAtPoint(evt.getPoint());
+                int col = table.columnAtPoint(evt.getPoint());
+                if (row >= 0 && col >= 0) {
+                    // Open BookingFormView with selected booking
+                    BookingFormView bookingFormView = new BookingFormView(cardLayout, parentPanel, bookings.get(row));
+                    parentPanel.add(bookingFormView, "BookingForm");
+                    cardLayout.show(parentPanel, "BookingForm");
+                }
+            }
+        });
+
         JScrollPane scrollPane = new JScrollPane(table);
         add(scrollPane, BorderLayout.CENTER);
 
@@ -67,7 +82,7 @@ public class BookingListView extends JPanel {
         BookingDao bookingDao = new BookingDao();
         List<Booking> bookings = bookingDao.getAll();
 
-        // Inicialize um DefaultTableModel
+        // Initialize a DefaultTableModel
         DefaultTableModel model = new DefaultTableModel(columnNames, 0);
         table.setModel(model);
 
@@ -76,9 +91,9 @@ public class BookingListView extends JPanel {
                     booking.getGuestFirstName(),
                     booking.getGuestLastName(),
                     (booking.getRoom() != null) ? booking.getRoom().getRoomNumber() : "",
-                    booking.getCheckInDate(),
-                    booking.getCheckOutDate(),
-                    booking.getStatus()
+                    dateFormat.format(booking.getCheckInDate()),
+                    dateFormat.format(booking.getCheckOutDate()),
+                    (booking.getStatus() != null) ? booking.getStatus().getState() : ""
             };
             model.addRow(rowData);
         }

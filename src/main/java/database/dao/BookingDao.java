@@ -25,13 +25,33 @@ public class BookingDao {
         return booking;
     }
 
-    // verify if there is a booking occupying the room during period of given booking
-    public boolean existByRoomAndPeriod(int roomId, Date startDate, Date endDate) {
+    public List<Booking> getByRoomId(int roomId) {
         Session session = HibernateUtil.getSession();
-        Query<Booking> query = session.createQuery("from Booking where room.id = :roomId and ((checkInDate <= :startDate and checkOutDate >= :startDate) or (checkInDate <= :endDate and checkOutDate >= :endDate))", Booking.class);
+        Query<Booking> query = session.createQuery("from Booking where room.id = :roomId", Booking.class);
         query.setParameter("roomId", roomId);
-        query.setParameter("startDate", startDate);
-        query.setParameter("endDate", endDate);
+        List<Booking> bookings = query.list();
+        session.close();
+        return bookings;
+    }
+
+    public boolean isRoomBooked(int roomId, Date checkInDate, Date checkOutDate) {
+        Session session = HibernateUtil.getSession();
+        Query<Booking> query = session.createQuery("from Booking where room.id = :roomId and checkInDate < :checkOutDate and checkOutDate > :checkInDate", Booking.class);
+        query.setParameter("roomId", roomId);
+        query.setParameter("checkInDate", checkInDate);
+        query.setParameter("checkOutDate", checkOutDate);
+        List<Booking> bookings = query.list();
+        session.close();
+        return !bookings.isEmpty();
+    }
+
+    public boolean isRoomBooked(Booking booking) {
+        Session session = HibernateUtil.getSession();
+        Query<Booking> query = session.createQuery("from Booking where room.id = :roomId and checkInDate < :checkOutDate and checkOutDate > :checkInDate and id != :bookingId", Booking.class);
+        query.setParameter("roomId", booking.getRoomId());
+        query.setParameter("checkInDate", booking.getCheckInDate());
+        query.setParameter("checkOutDate", booking.getCheckOutDate());
+        query.setParameter("bookingId", booking.getId());
         List<Booking> bookings = query.list();
         session.close();
         return !bookings.isEmpty();

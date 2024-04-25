@@ -64,6 +64,9 @@ public class RoomFormView extends JPanel {
         // Delete and Cancel Buttons
         deleteButton = new JButton("Delete");
         deleteButton.setForeground(Color.RED); // Set text color to red
+        if (room == null) {
+            deleteButton.setEnabled(false); // Disable delete button if no room is selected
+        }
         cancelButton = new JButton("Cancel");
 
         GridBagLayout buttonLayout = new GridBagLayout();
@@ -117,10 +120,7 @@ public class RoomFormView extends JPanel {
                 RoomDao roomDao = new RoomDao();
 
                 // Check if any field is blank
-                if (roomNumberField.getText().trim().isEmpty() ||
-                        adultsCapacityField.getText().trim().isEmpty() ||
-                        childrenCapacityField.getText().trim().isEmpty() ||
-                        priceField.getText().trim().isEmpty()) {
+                if (areFieldsEmpty()) {
                     JOptionPane.showMessageDialog(null, "All fields must be filled", "Warning", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
@@ -167,6 +167,7 @@ public class RoomFormView extends JPanel {
                 roomListView.refreshTable(); // Refresh the table
                 cardLayout.show(parentPanel, "Rooms"); // Go back to RoomListView
                 System.out.println("Room was successfully saved/updated");
+                clearForm();
             }
         });
 
@@ -192,6 +193,13 @@ public class RoomFormView extends JPanel {
                 }
             }
         });
+    }
+
+    public boolean areFieldsEmpty() {
+        return roomNumberField.getText().trim().isEmpty() ||
+                adultsCapacityField.getText().trim().isEmpty() ||
+                childrenCapacityField.getText().trim().isEmpty() ||
+                priceField.getText().trim().isEmpty();
     }
 
     public void clearForm() {

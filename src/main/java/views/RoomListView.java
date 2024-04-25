@@ -45,10 +45,9 @@ public class RoomListView extends JPanel {
         table.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 int row = table.rowAtPoint(e.getPoint());
-                if (row >= 0) {
-                    Room selectedRoom = rooms.get(row);
+                if (row >= 0) {;
                     // Open RoomFormView with selectedRoom
-                    RoomFormView roomFormView = new RoomFormView(cardLayout, parentPanel, selectedRoom);
+                    RoomFormView roomFormView = new RoomFormView(cardLayout, parentPanel, rooms.get(row));
                     parentPanel.add(roomFormView, "RoomForm");
                     cardLayout.show(parentPanel, "RoomForm");
                 }
