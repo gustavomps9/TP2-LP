@@ -16,19 +16,27 @@ public class BookingListView extends JPanel {
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
     private final JTable table;
     private final JButton addButton;
+    private final JTextField guestNameField;
+    private final JTextField statusField;
+    private final JButton searchButton;
+    private final DefaultTableModel model; // Declare model here
 
     public BookingListView(CardLayout cardLayout, JPanel parentPanel) {
         setLayout(new BorderLayout());
         add(new JLabel("Bookings List"), BorderLayout.NORTH);
 
-        // Initialize table with non-editable model
-        DefaultTableModel model = new DefaultTableModel(columnNames, 0) {
-            // Override isCellEditable to always return false
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
+        // Initialize search components
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        guestNameField = new JTextField(20);
+        statusField = new JTextField(10);
+        searchButton = new JButton("Search");
+        searchPanel.add(new JLabel("Search by Guest Name:"));
+        searchPanel.add(guestNameField);
+        searchPanel.add(new JLabel("Search by Status:"));
+        searchPanel.add(statusField);
+        searchPanel.add(searchButton);
+        add(searchPanel, BorderLayout.NORTH);
+
 
         // Initialize table with column names and existing data
         BookingDao bookingDao = new BookingDao();
@@ -44,14 +52,16 @@ public class BookingListView extends JPanel {
             data[i][5] = (booking.getStatus() != null) ? booking.getStatus().getState() : "";
         }
 
-        table = new JTable(data, columnNames);
+        // Initialize table with non-editable model
+        model = new MyDefaultTableModel(columnNames, 0); // Use MyDefaultTableModel
+        table = new JTable(model); // Use MyDefaultTableModel
         table.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 int row = table.rowAtPoint(evt.getPoint());
                 int col = table.columnAtPoint(evt.getPoint());
                 if (row >= 0 && col >= 0) {
                     // Open BookingFormView with selected booking
-                    BookingFormView bookingFormView = new BookingFormView(cardLayout, parentPanel, bookings.get(row));
+                    BookingFormView bookingFormView = new BookingFormView(cardLayout, parentPanel, (Booking) model.getValueAt(row, 0));
                     parentPanel.add(bookingFormView, "BookingForm");
                     cardLayout.show(parentPanel, "BookingForm");
                 }
@@ -75,6 +85,16 @@ public class BookingListView extends JPanel {
         buttonPanel.add(addButton);
         add(buttonPanel, BorderLayout.SOUTH);
 
+        // Add listener to search button
+        searchButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String guestName = guestNameField.getText();
+                String status = statusField.getText();
+                refreshTableWithFilters(guestName, status);
+            }
+        });
+
         refreshTable();
     }
 
@@ -82,9 +102,8 @@ public class BookingListView extends JPanel {
         BookingDao bookingDao = new BookingDao();
         List<Booking> bookings = bookingDao.getAll();
 
-        // Initialize a DefaultTableModel
-        DefaultTableModel model = new DefaultTableModel(columnNames, 0);
-        table.setModel(model);
+        // Utilize the instance variable 'model' instead of redefining a new local variable
+        model.setRowCount(0);
 
         for (Booking booking : bookings) {
             Object[] rowData = {
@@ -99,5 +118,45 @@ public class BookingListView extends JPanel {
         }
     }
 
-}
+    public void refreshTableWithFilters(String guestName, String status) {
+        BookingDao bookingDao = new BookingDao();
+        List<Booking> bookings;
 
+        if (!guestName.isEmpty() && !status.isEmpty()) {
+            bookings = bookingDao.getByGuestNameAndStatus(guestName, status);
+        } else if (!guestName.isEmpty()) {
+            bookings = bookingDao.getByGuestName(guestName);
+        } else if (!status.isEmpty()) {
+            bookings = bookingDao.getByStatus(status);
+        } else {
+            bookings = bookingDao.getAll();
+        }
+
+        // Utilize the instance variable 'model' instead of redefining a new local variable
+        model.setRowCount(0);
+
+        for (Booking booking : bookings) {
+            Object[] rowData = {
+                    booking.getGuestFirstName(),
+                    booking.getGuestLastName(),
+                    (booking.getRoom() != null) ? booking.getRoom().getRoomNumber() : "",
+                    dateFormat.format(booking.getCheckInDate()),
+                    dateFormat.format(booking.getCheckOutDate()),
+                    (booking.getStatus() != null) ? booking.getStatus().getState() : ""
+            };
+            model.addRow(rowData);
+        }
+    }
+
+    // Custom DefaultTableModel to prevent cell editing
+    private static class MyDefaultTableModel extends DefaultTableModel {
+        public MyDefaultTableModel(Object[] columnNames, int rowCount) {
+            super(columnNames, rowCount);
+        }
+
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            return false;
+        }
+    }
+}

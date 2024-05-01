@@ -148,4 +148,37 @@ public class BookingDao {
             e.printStackTrace();
         }
     }
+
+    // getByGuestNameAndStatus
+    public List<Booking> getByGuestNameAndStatus(String guestName, String status) {
+        Session session = HibernateUtil.getSession();
+        Query<Booking> query = session.createQuery("from Booking where guestFirstName = :guestName and status = :status", Booking.class);
+        query.setParameter("guestName", guestName);
+        query.setParameter("status", status);
+        List<Booking> bookings = query.list();
+        session.close();
+        return bookings;
+    }
+
+
+    // getByGuestName
+    public List<Booking> getByGuestName(String guestName) {
+        Session session = HibernateUtil.getSession();
+        Query<Booking> query = session.createQuery("from Booking where guestFirstName = :guestName", Booking.class);
+        query.setParameter("guestName", guestName);
+        List<Booking> bookings = query.list();
+        session.close();
+        return bookings;
+    }
+
+
+    // getByStatus
+    public List<Booking> getByStatus(String status) {
+        Session session = HibernateUtil.getSession();
+        Query<Booking> query = session.createQuery("from Booking where status = :status", Booking.class);
+        query.setParameter("status", status);
+        List<Booking> bookings = query.list();
+        session.close();
+        return bookings;
+    }
 }
