@@ -162,7 +162,7 @@ public class RoomFormView extends JPanel {
                     roomDao.save(newRoom);
                 }
 
-                RoomListView roomListView = (RoomListView) parentPanel.getComponent(1); // Get RoomListView
+                RoomListView roomListView = (RoomListView) parentPanel.getComponent(2); // Get RoomListView
                 roomListView.refreshTable(); // Refresh the table
                 cardLayout.show(parentPanel, "Rooms"); // Go back to RoomListView
                 System.out.println("Room was successfully saved/updated");
@@ -185,7 +185,7 @@ public class RoomFormView extends JPanel {
                     if (confirm == JOptionPane.YES_OPTION) {
                         RoomDao roomDao = new RoomDao();
                         roomDao.delete(room);
-                        RoomListView roomListView = (RoomListView) parentPanel.getComponent(1); // Get RoomListView
+                        RoomListView roomListView = (RoomListView) parentPanel.getComponent(2); // Get RoomListView
                         roomListView.refreshTable(); // Refresh the table
                         cardLayout.show(parentPanel, "Rooms"); // Go back to RoomListView
                     }
