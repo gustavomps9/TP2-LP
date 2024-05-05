@@ -75,6 +75,8 @@ public class BookingApplication extends JFrame {
     }
 
     private void showHomepage() {
+        HomepageView homepageView = (HomepageView) cardsPanel.getComponent(1);
+        homepageView.refreshTables();
         cardLayout.show(cardsPanel, "Homepage");
     }
 
@@ -83,6 +85,8 @@ public class BookingApplication extends JFrame {
     }
 
     private void showBookingList() {
+        BookingListView bookingListView = (BookingListView) cardsPanel.getComponent(4);
+        bookingListView.refreshTable();
         cardLayout.show(cardsPanel, "Bookings");
     }
 

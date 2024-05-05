@@ -1,6 +1,5 @@
 package views;
 
-import database.dao.BookingDao;
 import database.dao.RoomDao;
 import entities.Room;
 
@@ -15,7 +14,7 @@ public class RoomFormView extends JPanel {
     private final JTextField childrenCapacityField;
     private final JTextField priceField;
     private final JButton submitButton;
-    private final JButton cancelButton;
+    private final JButton backButton;
     private final JButton deleteButton;
 
     public RoomFormView(CardLayout cardLayout, JPanel parentPanel, Room room) {
@@ -67,7 +66,7 @@ public class RoomFormView extends JPanel {
         if (room == null) {
             deleteButton.setEnabled(false); // Disable delete button if no room is selected
         }
-        cancelButton = new JButton("Cancel");
+        backButton = new JButton("Back");
 
         GridBagLayout buttonLayout = new GridBagLayout();
         GridBagConstraints buttonGbc = new GridBagConstraints();
@@ -85,7 +84,7 @@ public class RoomFormView extends JPanel {
         buttonGbc.weightx = 0; // No extra horizontal growth
         buttonGbc.anchor = GridBagConstraints.WEST; // Align to the left
         buttonGbc.insets = new Insets(0, 5, 0, 0); // Add some space to the left of the cancel button
-        buttonPanel.add(cancelButton, buttonGbc);
+        buttonPanel.add(backButton, buttonGbc);
 
         gbc.gridx = 0;
         gbc.gridy = 4;
@@ -171,7 +170,7 @@ public class RoomFormView extends JPanel {
             }
         });
 
-        cancelButton.addActionListener(new ActionListener() {
+        backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 cardLayout.show(parentPanel, "Rooms"); // Go back to RoomListView

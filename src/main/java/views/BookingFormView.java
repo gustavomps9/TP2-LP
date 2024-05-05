@@ -34,6 +34,7 @@ public class BookingFormView extends JPanel {
     private JSpinner numberOfAdultsSpinner;
     private JSpinner numberOfChildrenSpinner;
     private JComboBox<String> roomComboBox;
+    private JLabel roomPriceLabel;
     private JButton submitButton;
     private JButton cancelButton;
     private JButton checkInButton;
@@ -61,6 +62,9 @@ public class BookingFormView extends JPanel {
             clearForm();
         }
         updateRoomList();
+        // Set the price of the selected room
+        selectedRoom = (Room) roomComboBox.getSelectedItem();
+        roomPriceLabel.setText(" at " + selectedRoom.getPrice() + "€ per night");
 
         // Button actions
         submitButton.addActionListener(new ActionListener() {
@@ -205,6 +209,7 @@ public class BookingFormView extends JPanel {
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
                     selectedRoom = (Room) roomComboBox.getSelectedItem();
+                    roomPriceLabel.setText(" at " + selectedRoom.getPrice() + "€ per night");
                 }
             }
         });
@@ -228,7 +233,6 @@ public class BookingFormView extends JPanel {
         guestLastNameField = new JTextField(20);
     }
 
-    // Initialize Date Pickers
     // Initialize Date Pickers
     private void initializeDatePickers() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
@@ -353,13 +357,33 @@ public class BookingFormView extends JPanel {
         gbc.gridx = 1;
         add(numberOfChildrenSpinner, gbc);
 
-        // Room Selector
+        /// Room Selector
         gbc.gridx = 0;
         gbc.gridy = 6;
         add(new JLabel("Room:"), gbc);
 
+        // Create a new GridBagLayout and GridBagConstraints for the roomPanel
+        GridBagLayout roomPanelLayout = new GridBagLayout();
+        GridBagConstraints roomPanelGbc = new GridBagConstraints();
+        roomPanelGbc.fill = GridBagConstraints.HORIZONTAL;
+
+        JPanel roomPanel = new JPanel(roomPanelLayout);
+
+        // Add roomComboBox to roomPanel with a width of 1 cell
+        roomPanelGbc.gridx = 0;
+        roomPanelGbc.gridy = 0;
+        roomPanelGbc.weightx = 0.3; // this can be adjusted as per your requirement
+        roomPanel.add(roomComboBox, roomPanelGbc);
+
+        // Add roomPriceLabel to roomPanel with a width of 2 cells
+        roomPriceLabel = new JLabel(" at ?€ per night");
+        roomPanelGbc.gridx = 1;
+        roomPanelGbc.weightx = 0.7; // this can be adjusted as per your requirement
+        roomPanel.add(roomPriceLabel, roomPanelGbc);
+
+        // Add roomPanel to the main panel
         gbc.gridx = 1;
-        add(roomComboBox, gbc);
+        add(roomPanel, gbc);
 
         // Delete Button
         gbc.gridx = 1;

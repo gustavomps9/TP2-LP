@@ -18,15 +18,14 @@ public class HomepageView extends JPanel {
     private JTable checkOutTable;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
     private BookingDao bookingDao = new BookingDao();
-    private StatusDao statusDao = new StatusDao();  // Assume statusDao is set up to handle status changes
+    private StatusDao statusDao = new StatusDao();
 
     public HomepageView() {
-        setLayout(new GridLayout(2, 1));  // Layout to hold two tables
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         initTables();
     }
 
     private void initTables() {
-        // Retrieve all bookings
         List<Booking> bookings = bookingDao.getAll();
         Date today = new Date();
 
@@ -34,19 +33,29 @@ public class HomepageView extends JPanel {
         checkInTable = createTable(bookings, true);
         checkOutTable = createTable(bookings, false);
 
-        // Add tables to the panel
-        add(new JScrollPane(checkInTable));
-        add(new JScrollPane(checkOutTable));
+        // Check In Section
+        JPanel checkInPanel = new JPanel(new BorderLayout());
+        checkInPanel.add(new JLabel("Check In Today"), BorderLayout.NORTH);
+        checkInPanel.add(new JScrollPane(checkInTable), BorderLayout.CENTER);
+
+        // Check Out Section
+        JPanel checkOutPanel = new JPanel(new BorderLayout());
+        checkOutPanel.add(new JLabel("Check Out Today"), BorderLayout.NORTH);
+        checkOutPanel.add(new JScrollPane(checkOutTable), BorderLayout.CENTER);
+
+        // Add panels to the main panel
+        add(checkInPanel);
+        add(checkOutPanel);
     }
 
     private JTable createTable(List<Booking> bookings, boolean isCheckIn) {
-        String[] columnNames = {"Last Name", "First Name", "Room", isCheckIn ? "Check-Out" : "Check-In", "Action"};
+        String[] columnNames = {"First Name", "Last Name", "Room", isCheckIn ? "Check Out" : "Check In", "Action"};
         Object[][] data = bookings.stream()
-                .filter(b -> dateFormat.format(isCheckIn ? b.getCheckInDate() : b.getCheckOutDate()).equals(dateFormat.format(new Date())))
-                .filter(b -> b.getStatus().getState().equals(isCheckIn ? "Booked" : "CheckedIn"))
+                .filter(b -> b.getStatus() != null && dateFormat.format(isCheckIn ? b.getCheckInDate() : b.getCheckOutDate()).equals(dateFormat.format(new Date())))
+                .filter(b -> b.getStatus().getState().equals(isCheckIn ? "Booked" : "Checked In"))
                 .map(b -> new Object[]{
-                        b.getGuestLastName(),
                         b.getGuestFirstName(),
+                        b.getGuestLastName(),
                         b.getRoom().getRoomNumber(),
                         dateFormat.format(isCheckIn ? b.getCheckOutDate() : b.getCheckInDate()),
                         createButton(b, isCheckIn)
@@ -77,12 +86,24 @@ public class HomepageView extends JPanel {
         JButton button = new JButton(isCheckIn ? "Check In" : "Check Out");
         button.addActionListener(e -> {
             // Update booking status
-            booking.setStatus(statusDao.getByState(isCheckIn ? "CheckedIn" : "CheckedOut"));
+            booking.setStatus(statusDao.getByState(isCheckIn ? "Checked In" : "Checked Out"));
             bookingDao.update(booking);
             // Refresh the table
-            initTables();
+            refreshTables();
         });
         return button;
+    }
+
+    public void refreshTables() {
+        // Remove all components from the panel
+        this.removeAll();
+
+        // Reinitialize the tables
+        initTables();
+
+        // Revalidate and repaint to ensure the UI updates
+        this.revalidate();
+        this.repaint();
     }
 }
 
