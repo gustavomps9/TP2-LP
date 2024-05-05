@@ -6,6 +6,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
+import java.util.Date;
 import java.util.List;
 
 public class RoomDao {
@@ -31,6 +32,28 @@ public class RoomDao {
         Room room = query.uniqueResult();
         session.close();
         return room;
+    }
+
+    public List<Room> getSuitableRooms(int adults, int children) {
+        Session session = HibernateUtil.getSession();
+        Query<Room> query = session.createQuery("from Room where adultsCapacity >= :adults and childrenCapacity >= :children", Room.class);
+        query.setParameter("adults", adults);
+        query.setParameter("children", children);
+        List<Room> rooms = query.list();
+        session.close();
+        return rooms;
+    }
+
+    public List<Room> getSuitableAndAvailableRooms(int adults, int children, Date checkIn, Date checkOut) {
+        Session session = HibernateUtil.getSession();
+        Query<Room> query = session.createQuery("from Room where adultsCapacity >= :adults and childrenCapacity >= :children and id not in (select room.id from Booking where (checkInDate <= :checkIn and checkOutDate >= :checkIn) or (checkInDate <= :checkOut and checkOutDate >= :checkOut) or (checkInDate >= :checkIn and checkOutDate <= :checkOut))", Room.class);
+        query.setParameter("adults", adults);
+        query.setParameter("children", children);
+        query.setParameter("checkIn", checkIn);
+        query.setParameter("checkOut", checkOut);
+        List<Room> rooms = query.list();
+        session.close();
+        return rooms;
     }
 
     public boolean existByNumber(int number) {

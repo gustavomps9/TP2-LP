@@ -14,8 +14,9 @@ import java.util.List;
 public class BookingApplication extends JFrame {
     private final CardLayout cardLayout;
     private final JPanel cardsPanel;
-    private final JButton roomsButton;
+    private final JButton homeButton;
     private final JButton bookingsButton;
+    private final JButton roomsButton;
 
     public BookingApplication() {
         // Set up the main frame
@@ -28,14 +29,18 @@ public class BookingApplication extends JFrame {
         JToolBar toolBar = new JToolBar();
         toolBar.setFloatable(false);
 
-        // Create buttons with icons for navigation
-        roomsButton = new JButton("Rooms");
-        roomsButton.addActionListener(e -> showRoomList());
-        toolBar.add(roomsButton);
+        // Create buttons for navigation
+        homeButton = new JButton("Home");
+        homeButton.addActionListener(e -> showHomepage());
+        toolBar.add(homeButton);
 
         bookingsButton = new JButton("Bookings");
         bookingsButton.addActionListener(e -> showBookingList());
         toolBar.add(bookingsButton);
+
+        roomsButton = new JButton("Rooms");
+        roomsButton.addActionListener(e -> showRoomList());
+        toolBar.add(roomsButton);
 
         // Add the toolbar to the top of the frame
         add(toolBar, BorderLayout.NORTH);
@@ -46,12 +51,14 @@ public class BookingApplication extends JFrame {
 
         // Add individual view panels
         SplashScreenView splashScreenView = new SplashScreenView();
+        HomepageView homepageView = new HomepageView();
         RoomListView roomListView = new RoomListView(cardLayout, cardsPanel);
         RoomFormView RoomFormView = new RoomFormView(cardLayout, cardsPanel, null);
         BookingFormView bookingFormView = new BookingFormView(cardLayout, cardsPanel, null);
         BookingListView bookingListView = new BookingListView(cardLayout, cardsPanel);
 
         cardsPanel.add(splashScreenView, "Splash");
+        cardsPanel.add(homepageView, "Homepage");
         cardsPanel.add(roomListView, "Rooms");
         cardsPanel.add(RoomFormView, "RoomForm");
         cardsPanel.add(bookingListView, "Bookings");
@@ -60,22 +67,24 @@ public class BookingApplication extends JFrame {
         // Display the RoomListView initially
         add(cardsPanel, BorderLayout.CENTER);
 
-        showRoomList(); // Start with RoomListView
+        showHomepage(); // Show the homepage initially
     }
 
     private void showSplashScreen() {
         cardLayout.show(cardsPanel, "Splash");
     }
 
+    private void showHomepage() {
+        cardLayout.show(cardsPanel, "Homepage");
+    }
+
     private void showRoomList() {
         cardLayout.show(cardsPanel, "Rooms");
     }
 
-
     private void showBookingList() {
         cardLayout.show(cardsPanel, "Bookings");
     }
-
 
     public static void main(String[] args) {
         RoomDao roomDao = new RoomDao();

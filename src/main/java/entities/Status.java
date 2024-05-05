@@ -36,4 +36,9 @@ public class Status {
     public void setState(String state) {
         this.state = state;
     }
+
+    @Override
+    public String toString() {
+        return this.state;
+    }
 }

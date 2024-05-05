@@ -30,8 +30,6 @@ public class RoomListView extends JPanel {
         RoomDao roomDao = new RoomDao();
         rooms = roomDao.getAll();
         rooms.sort(Comparator.comparingInt(Room::getRoomNumber));
-        // Convert List of Room objects to a 2D array for the table
-        String[] columnNames = {"Room Number", "Adults", "Children", "Price"};
         Object[][] data = new Object[rooms.size()][4];
         rooms.forEach(room -> {
             data[rooms.indexOf(room)] = new Object[]{room.getRoomNumber(), room.getAdultsCapacity(), room.getChildrenCapacity(), room.getPrice()};

@@ -85,4 +85,9 @@ public class Room {
     public int hashCode() {
         return Objects.hash(roomNumber, adultsCapacity, childrenCapacity, price);
     }
+
+    @Override
+    public String toString() {
+        return String.valueOf(roomNumber);
+    }
 }

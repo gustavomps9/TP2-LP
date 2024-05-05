@@ -34,6 +34,51 @@ public class BookingDao {
         return bookings;
     }
 
+    public List<Booking> getByGuestNameOrLastNameAndStatus(String guestName, String status) {
+        Session session = HibernateUtil.getSession();
+        String[] nameParts = guestName.split(" ");
+        String queryString = "from Booking where status.state = :status and (";
+        for (int i = 0; i < nameParts.length; i++) {
+            if (i > 0) queryString += " or ";
+            queryString += "guestFirstName like :namePart" + i + " or guestLastName like :namePart" + i;
+        }
+        queryString += ")";
+        Query<Booking> query = session.createQuery(queryString, Booking.class);
+        for (int i = 0; i < nameParts.length; i++) {
+            query.setParameter("namePart" + i, "%" + nameParts[i] + "%");
+        }
+        query.setParameter("status", status);
+        List<Booking> bookings = query.list();
+        session.close();
+        return bookings;
+    }
+
+    public List<Booking> getByGuestNameOrLastName(String guestName) {
+        Session session = HibernateUtil.getSession();
+        String[] nameParts = guestName.split(" ");
+        String queryString = "from Booking where ";
+        for (int i = 0; i < nameParts.length; i++) {
+            if (i > 0) queryString += " or ";
+            queryString += "guestFirstName like :namePart" + i + " or guestLastName like :namePart" + i;
+        }
+        Query<Booking> query = session.createQuery(queryString, Booking.class);
+        for (int i = 0; i < nameParts.length; i++) {
+            query.setParameter("namePart" + i, "%" + nameParts[i] + "%");
+        }
+        List<Booking> bookings = query.list();
+        session.close();
+        return bookings;
+    }
+
+    public List<Booking> getByState(String state) {
+        Session session = HibernateUtil.getSession();
+        Query<Booking> query = session.createQuery("from Booking where status.state = :status", Booking.class);
+        query.setParameter("status", state);
+        List<Booking> bookings = query.list();
+        session.close();
+        return bookings;
+    }
+
     public boolean isRoomBooked(int roomId, Date checkInDate, Date checkOutDate) {
         Session session = HibernateUtil.getSession();
         Query<Booking> query = session.createQuery("from Booking where room.id = :roomId and checkInDate < :checkOutDate and checkOutDate > :checkInDate", Booking.class);
@@ -147,38 +192,5 @@ public class BookingDao {
             }
             e.printStackTrace();
         }
-    }
-
-    // getByGuestNameAndStatus
-    public List<Booking> getByGuestNameAndStatus(String guestName, String status) {
-        Session session = HibernateUtil.getSession();
-        Query<Booking> query = session.createQuery("from Booking where guestFirstName = :guestName and status = :status", Booking.class);
-        query.setParameter("guestName", guestName);
-        query.setParameter("status", status);
-        List<Booking> bookings = query.list();
-        session.close();
-        return bookings;
-    }
-
-
-    // getByGuestName
-    public List<Booking> getByGuestName(String guestName) {
-        Session session = HibernateUtil.getSession();
-        Query<Booking> query = session.createQuery("from Booking where guestFirstName = :guestName", Booking.class);
-        query.setParameter("guestName", guestName);
-        List<Booking> bookings = query.list();
-        session.close();
-        return bookings;
-    }
-
-
-    // getByStatus
-    public List<Booking> getByStatus(String status) {
-        Session session = HibernateUtil.getSession();
-        Query<Booking> query = session.createQuery("from Booking where status = :status", Booking.class);
-        query.setParameter("status", status);
-        List<Booking> bookings = query.list();
-        session.close();
-        return bookings;
     }
 }

@@ -22,6 +22,13 @@ public class StatusDao {
         return status;
     }
 
+    public Status getByState(String state) {
+        Session session = HibernateUtil.getSession();
+        Status status = session.createQuery("from Status where state = :state", Status.class).setParameter("state", state).uniqueResult();
+        session.close();
+        return status;
+    }
+
     public void save(Status status) {
         Transaction transaction = null;
         Session session = null;
