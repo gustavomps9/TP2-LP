@@ -41,7 +41,6 @@ public class BookingFormView extends JPanel {
     private JButton checkOutButton;
     private JButton backButton;
 
-
     // variables for the booking form
     private BookingDao bookingDao = new BookingDao();
     private RoomDao roomDao = new RoomDao();
@@ -65,6 +64,7 @@ public class BookingFormView extends JPanel {
         // Set the price of the selected room
         selectedRoom = (Room) roomComboBox.getSelectedItem();
         roomPriceLabel.setText(" at " + selectedRoom.getPrice() + "€ per night");
+
 
         // Button actions
         submitButton.addActionListener(new ActionListener() {
@@ -160,8 +160,9 @@ public class BookingFormView extends JPanel {
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                cardLayout.show(parentPanel, "Bookings"); // Return to BookingListView
-                clearForm();
+                BookingListView bookingListView = (BookingListView) parentPanel.getComponent(4); // Get BookingListView
+                bookingListView.refreshTable(); // Refresh the table
+                cardLayout.show(parentPanel, "Bookings"); // Go back to BookingListView
             }
         });
 

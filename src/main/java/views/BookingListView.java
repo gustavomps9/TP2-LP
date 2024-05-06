@@ -24,7 +24,6 @@ public class BookingListView extends JPanel {
     private final JTable table;
     private final JButton addButton;
     private final JTextField guestNameField;
-    private final JButton searchButton;
     private final JComboBox statusComboBox;
     private final DefaultTableModel model;
 
@@ -35,10 +34,8 @@ public class BookingListView extends JPanel {
         // Initialize search components
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         guestNameField = new JTextField(20);
-        searchButton = new JButton("Search");
         searchPanel.add(new JLabel("Search by Guest Name:"));
         searchPanel.add(guestNameField);
-        //searchPanel.add(searchButton);
         searchPanel.add(new JLabel("Filter by Status:"));
         // Initialize status combo box
         StatusDao statusDao = new StatusDao();
@@ -67,21 +64,22 @@ public class BookingListView extends JPanel {
         model = new MyDefaultTableModel(columnNames, 0);
         table = new JTable(model); // Use MyDefaultTableModel
         table.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                int row = table.rowAtPoint(evt.getPoint());
-                int col = table.columnAtPoint(evt.getPoint());
-                if (row >= 0 && col >= 0) {
-                    // Retrieve the Booking object from the bookings list
-                    Booking booking = bookings.get(row);
-                    // Open BookingFormView with selected booking
-                    BookingFormView bookingFormView = new BookingFormView(cardLayout, parentPanel, booking);
-                    parentPanel.add(bookingFormView, "BookingForm");
-                    cardLayout.show(parentPanel, "BookingForm");
+                public void mouseClicked(java.awt.event.MouseEvent evt) {
+                    int row = table.rowAtPoint(evt.getPoint());
+                    int col = table.columnAtPoint(evt.getPoint());
+                    if (row >= 0 && col >= 0) {
+                        // Retrieve the Booking object from the bookings list
+                        Booking booking = bookings.get(row);
+                        // Open BookingFormView with selected booking
+                        BookingFormView bookingFormView = new BookingFormView(cardLayout, parentPanel, booking);
+                        parentPanel.add(bookingFormView, "BookingForm");
+                        cardLayout.show(parentPanel, "BookingForm");
+                    }
                 }
-            }
-        });
+            });
 
-        JScrollPane scrollPane = new JScrollPane(table);
+
+            JScrollPane scrollPane = new JScrollPane(table);
         add(scrollPane, BorderLayout.CENTER);
 
         // Add components like table, buttons, etc.
