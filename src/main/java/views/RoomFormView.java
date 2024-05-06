@@ -9,15 +9,110 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class RoomFormView extends JPanel {
-    private final JTextField roomNumberField;
-    private final JTextField adultsCapacityField;
-    private final JTextField childrenCapacityField;
-    private final JTextField priceField;
-    private final JButton submitButton;
-    private final JButton backButton;
-    private final JButton deleteButton;
+    private JTextField roomNumberField;
+    private JTextField adultsCapacityField;
+    private JTextField childrenCapacityField;
+    private JTextField priceField;
+    private JButton submitButton;
+    private JButton backButton;
+    private JButton deleteButton;
 
     public RoomFormView(CardLayout cardLayout, JPanel parentPanel, Room room) {
+        initComponents(room);
+
+        // If room is not null, populate the form fields with the room data
+        if (room != null) {
+            roomNumberField.setText(String.valueOf(room.getNumber()));
+            adultsCapacityField.setText(String.valueOf(room.getAdultsCapacity()));
+            childrenCapacityField.setText(String.valueOf(room.getChildrenCapacity()));
+            priceField.setText(String.valueOf(room.getPrice()));
+        } else {
+            clearForm();
+        }
+
+        // Button actions
+        submitButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                RoomDao roomDao = new RoomDao();
+
+                // Check if any field is blank
+                if (areFieldsEmpty()) {
+                    JOptionPane.showMessageDialog(null, "All fields must be filled", "Warning", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                // Check if a room with the entered room number already exists
+                int enteredRoomNumber = Integer.parseInt(roomNumberField.getText());
+                if (roomDao.existByNumber(enteredRoomNumber) && (room == null || room.getNumber() != enteredRoomNumber)) {
+                    JOptionPane.showMessageDialog(null, "A room with this number already exists", "Warning", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                // If room is not null, check if there are any changes to save
+                if (room != null) {
+                    int enteredAdultsCapacity = Integer.parseInt(adultsCapacityField.getText());
+                    int enteredChildrenCapacity = Integer.parseInt(childrenCapacityField.getText());
+                    float enteredPrice = Float.parseFloat(priceField.getText());
+
+                    if (room.getNumber() == enteredRoomNumber &&
+                            room.getAdultsCapacity() == enteredAdultsCapacity &&
+                            room.getChildrenCapacity() == enteredChildrenCapacity &&
+                            room.getPrice() == enteredPrice) {
+                        JOptionPane.showMessageDialog(null, "No changes to save", "Information", JOptionPane.INFORMATION_MESSAGE);
+                        return;
+                    }
+
+                    // If there are changes, update the room
+                    room.seNumber(enteredRoomNumber);
+                    room.setAdultsCapacity(enteredAdultsCapacity);
+                    room.setChildrenCapacity(enteredChildrenCapacity);
+                    room.setPrice(enteredPrice);
+                    roomDao.update(room);
+                } else {
+                    // If room is null, create a new room
+                    Room newRoom = new Room(
+                            enteredRoomNumber,
+                            Integer.parseInt(adultsCapacityField.getText()),
+                            Integer.parseInt(childrenCapacityField.getText()),
+                            Float.parseFloat(priceField.getText())
+                    );
+                    roomDao.save(newRoom);
+                }
+
+                RoomListView roomListView = (RoomListView) parentPanel.getComponent(2); // Get RoomListView
+                roomListView.refreshTable(); // Refresh the table
+                cardLayout.show(parentPanel, "Rooms"); // Go back to RoomListView
+                System.out.println("Room was successfully saved/updated");
+                clearForm();
+            }
+        });
+
+        backButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                cardLayout.show(parentPanel, "Rooms"); // Go back to RoomListView
+            }
+        });
+
+        deleteButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (room != null) {
+                    int confirm = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this room?", "Confirm Deletion", JOptionPane.YES_NO_OPTION);
+                    if (confirm == JOptionPane.YES_OPTION) {
+                        RoomDao roomDao = new RoomDao();
+                        roomDao.delete(room);
+                        RoomListView roomListView = (RoomListView) parentPanel.getComponent(2); // Get RoomListView
+                        roomListView.refreshTable(); // Refresh the table
+                        cardLayout.show(parentPanel, "Rooms"); // Go back to RoomListView
+                    }
+                }
+            }
+        });
+    }
+
+    private void initComponents(Room room) {
         setLayout(new GridBagLayout()); // Using GridBagLayout for better alignment
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10); // Spacing between components
@@ -100,98 +195,6 @@ public class RoomFormView extends JPanel {
         gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.LINE_END; // Align to the right end of the cell
         add(submitButton, gbc);
-
-
-        // If room is not null, populate the form fields with the room data
-        if (room != null) {
-            roomNumberField.setText(String.valueOf(room.getRoomNumber()));
-            adultsCapacityField.setText(String.valueOf(room.getAdultsCapacity()));
-            childrenCapacityField.setText(String.valueOf(room.getChildrenCapacity()));
-            priceField.setText(String.valueOf(room.getPrice()));
-        } else {
-            clearForm();
-        }
-
-        // Button actions
-        submitButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                RoomDao roomDao = new RoomDao();
-
-                // Check if any field is blank
-                if (areFieldsEmpty()) {
-                    JOptionPane.showMessageDialog(null, "All fields must be filled", "Warning", JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
-
-                // Check if a room with the entered room number already exists
-                int enteredRoomNumber = Integer.parseInt(roomNumberField.getText());
-                if (roomDao.existByNumber(enteredRoomNumber) && (room == null || room.getRoomNumber() != enteredRoomNumber)) {
-                    JOptionPane.showMessageDialog(null, "A room with this number already exists", "Warning", JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
-
-                // If room is not null, check if there are any changes to save
-                if (room != null) {
-                    int enteredAdultsCapacity = Integer.parseInt(adultsCapacityField.getText());
-                    int enteredChildrenCapacity = Integer.parseInt(childrenCapacityField.getText());
-                    float enteredPrice = Float.parseFloat(priceField.getText());
-
-                    if (room.getRoomNumber() == enteredRoomNumber &&
-                            room.getAdultsCapacity() == enteredAdultsCapacity &&
-                            room.getChildrenCapacity() == enteredChildrenCapacity &&
-                            room.getPrice() == enteredPrice) {
-                        JOptionPane.showMessageDialog(null, "No changes to save", "Information", JOptionPane.INFORMATION_MESSAGE);
-                        return;
-                    }
-
-                    // If there are changes, update the room
-                    room.setRoomNumber(enteredRoomNumber);
-                    room.setAdultsCapacity(enteredAdultsCapacity);
-                    room.setChildrenCapacity(enteredChildrenCapacity);
-                    room.setPrice(enteredPrice);
-                    roomDao.update(room);
-                } else {
-                    // If room is null, create a new room
-                    Room newRoom = new Room(
-                            enteredRoomNumber,
-                            Integer.parseInt(adultsCapacityField.getText()),
-                            Integer.parseInt(childrenCapacityField.getText()),
-                            Float.parseFloat(priceField.getText())
-                    );
-                    roomDao.save(newRoom);
-                }
-
-                RoomListView roomListView = (RoomListView) parentPanel.getComponent(2); // Get RoomListView
-                roomListView.refreshTable(); // Refresh the table
-                cardLayout.show(parentPanel, "Rooms"); // Go back to RoomListView
-                System.out.println("Room was successfully saved/updated");
-                clearForm();
-            }
-        });
-
-        backButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                cardLayout.show(parentPanel, "Rooms"); // Go back to RoomListView
-            }
-        });
-
-        deleteButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (room != null) {
-                    int confirm = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this room?", "Confirm Deletion", JOptionPane.YES_NO_OPTION);
-                    if (confirm == JOptionPane.YES_OPTION) {
-                        RoomDao roomDao = new RoomDao();
-                        roomDao.delete(room);
-                        RoomListView roomListView = (RoomListView) parentPanel.getComponent(2); // Get RoomListView
-                        roomListView.refreshTable(); // Refresh the table
-                        cardLayout.show(parentPanel, "Rooms"); // Go back to RoomListView
-                    }
-                }
-            }
-        });
     }
 
     public boolean areFieldsEmpty() {

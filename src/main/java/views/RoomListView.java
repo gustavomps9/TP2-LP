@@ -4,10 +4,7 @@ import entities.Room;
 import database.dao.RoomDao;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -29,14 +26,20 @@ public class RoomListView extends JPanel {
         // Initialize table with column names and existing data
         RoomDao roomDao = new RoomDao();
         rooms = roomDao.getAll();
-        rooms.sort(Comparator.comparingInt(Room::getRoomNumber));
+        rooms.sort(Comparator.comparingInt(Room::getNumber));
         Object[][] data = new Object[rooms.size()][4];
         rooms.forEach(room -> {
-            data[rooms.indexOf(room)] = new Object[]{room.getRoomNumber(), room.getAdultsCapacity(), room.getChildrenCapacity(), room.getPrice()};
+            data[rooms.indexOf(room)] = new Object[]{room.getNumber(), room.getAdultsCapacity(), room.getChildrenCapacity(), room.getPrice()};
         });
 
         DefaultTableModel model = new DefaultTableModel(data, columnNames);
         table = new JTable(model);
+
+        // add dividers between rows
+        table.setShowHorizontalLines(true);
+        table.setShowVerticalLines(true);
+        table.setGridColor(Color.LIGHT_GRAY);
+
         JScrollPane scrollPane = new JScrollPane(table);
         add(scrollPane, BorderLayout.CENTER);
 
@@ -75,11 +78,11 @@ public class RoomListView extends JPanel {
         rooms.clear();
         rooms.addAll(roomDao.getAll());
         // Sort rooms by room number
-        rooms.sort(Comparator.comparingInt(Room::getRoomNumber));
+        rooms.sort(Comparator.comparingInt(Room::getNumber));
         DefaultTableModel model = (DefaultTableModel) table.getModel();
         model.setRowCount(0); // Clear the table
         rooms.forEach(room -> {
-            model.addRow(new Object[]{room.getRoomNumber(), room.getAdultsCapacity(), room.getChildrenCapacity(), room.getPrice()});
+            model.addRow(new Object[]{room.getNumber(), room.getAdultsCapacity(), room.getChildrenCapacity(), room.getPrice()});
         });
     }
 

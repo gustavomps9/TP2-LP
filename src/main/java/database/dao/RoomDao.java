@@ -6,6 +6,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -14,6 +15,7 @@ public class RoomDao {
         Session session = HibernateUtil.getSession();
         Query<Room> query = session.createQuery("from Room", Room.class);
         List<Room> rooms = query.list();
+        rooms.sort(Comparator.comparing(Room::getNumber));
         session.close();
         return rooms;
     }
@@ -27,7 +29,7 @@ public class RoomDao {
 
     public Room getByNumber(int number) {
         Session session = HibernateUtil.getSession();
-        Query<Room> query = session.createQuery("from Room where roomNumber = :number", Room.class);
+        Query<Room> query = session.createQuery("from Room where number = :number", Room.class);
         query.setParameter("number", number);
         Room room = query.uniqueResult();
         session.close();
@@ -39,6 +41,16 @@ public class RoomDao {
         Query<Room> query = session.createQuery("from Room where adultsCapacity >= :adults and childrenCapacity >= :children", Room.class);
         query.setParameter("adults", adults);
         query.setParameter("children", children);
+        List<Room> rooms = query.list();
+        session.close();
+        return rooms;
+    }
+
+    public List<Room> getAvailableRooms(Date checkInDate, Date checkOutDate) {
+        Session session = HibernateUtil.getSession();
+        Query<Room> query = session.createQuery("from Room r where not exists (select 1 from Booking b where b.room = r and b.checkOutDate > :checkInDate and b.checkInDate < :checkOutDate)", Room.class);
+        query.setParameter("checkInDate", checkInDate);
+        query.setParameter("checkOutDate", checkOutDate);
         List<Room> rooms = query.list();
         session.close();
         return rooms;
@@ -58,7 +70,7 @@ public class RoomDao {
 
     public boolean existByNumber(int number) {
         Session session = HibernateUtil.getSession();
-        Query<Room> query = session.createQuery("from Room where roomNumber = :number", Room.class);
+        Query<Room> query = session.createQuery("from Room where number = :number", Room.class);
         query.setParameter("number", number);
         List<Room> rooms = query.list();
         session.close();

@@ -19,10 +19,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
+import java.util.*;
 import java.util.List;
-import java.util.Properties;
 
 import static java.util.Calendar.getInstance;
 
@@ -33,7 +31,7 @@ public class BookingFormView extends JPanel {
     private JDatePickerImpl checkOutDatePicker;
     private JSpinner numberOfAdultsSpinner;
     private JSpinner numberOfChildrenSpinner;
-    private JComboBox<String> roomComboBox;
+    private JComboBox<Room> roomComboBox;
     private JLabel roomPriceLabel;
     private JButton submitButton;
     private JButton cancelButton;
@@ -42,13 +40,13 @@ public class BookingFormView extends JPanel {
     private JButton backButton;
 
     // variables for the booking form
-    private BookingDao bookingDao = new BookingDao();
-    private RoomDao roomDao = new RoomDao();
+    private final BookingDao bookingDao = new BookingDao();
+    private final RoomDao roomDao = new RoomDao();
     private List<Room> rooms = roomDao.getAll();
     StatusDao statusDao = new StatusDao();
     private String enteredGuestFirstName, enteredGuestLastName;
     private int enteredNumberOfAdults, enteredNumberOfChildren;
-    private Date checkInDate, checkOutDate;
+    private Date selectedCheckInDate, selectedCheckOutDate;
     private Room selectedRoom;
 
     public BookingFormView(CardLayout cardLayout, JPanel parentPanel, Booking booking) {
@@ -57,14 +55,15 @@ public class BookingFormView extends JPanel {
         adjustButtonVisibility(booking);
         if (booking != null) {
             populateForm(booking);
+            assignValues();
+            updateRoomList(booking);
         } else {
             clearForm();
+            assignValues();
+            updateRoomList(null);
         }
-        updateRoomList();
-        // Set the price of the selected room
-        selectedRoom = (Room) roomComboBox.getSelectedItem();
-        roomPriceLabel.setText(" at " + selectedRoom.getPrice() + "€ per night");
 
+        roomPriceLabel.setText(" at " + selectedRoom.getPrice() + "€ per night");
 
         // Button actions
         submitButton.addActionListener(new ActionListener() {
@@ -81,18 +80,26 @@ public class BookingFormView extends JPanel {
                 }
 
                 assignValues();
+
+                // Validate the entered names
+                if (!enteredGuestFirstName.matches("[a-zA-Z]+") || !enteredGuestLastName.matches("[a-zA-Z]+")) {
+                    JOptionPane.showMessageDialog(null, "Names can only contain letters", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                if (booking != null && !hasChanges(booking)) {
+                    JOptionPane.showMessageDialog(null, "No changes to save", "Information", JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+
                 // Check if the selected room is available
-                if (bookingDao.isRoomBooked(selectedRoom.getId(), checkInDate, checkOutDate)) {
+                if (bookingDao.isRoomBooked(selectedRoom.getId(), selectedCheckInDate, selectedCheckOutDate) && (booking == null || booking.getRoom().getId() != selectedRoom.getId())){
                     JOptionPane.showMessageDialog(null, "Room is already booked for the selected dates", "Warning", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
 
                 // Update / save the booking
                 if (booking != null) {
-                    if (hasChanges(booking)) {
-                        JOptionPane.showMessageDialog(null, "No changes to save", "Information", JOptionPane.INFORMATION_MESSAGE);
-                        return;
-                    }
                     updateBooking(booking);
                 } else {
                     saveBooking();
@@ -169,13 +176,13 @@ public class BookingFormView extends JPanel {
         // listeners
         numberOfAdultsSpinner.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
-                updateRoomList();
+                updateRoomList(booking);
             }
         });
 
         numberOfChildrenSpinner.addChangeListener(new ChangeListener() {
             public void stateChanged(ChangeEvent e) {
-                updateRoomList();
+                updateRoomList(booking);
             }
         });
 
@@ -184,11 +191,11 @@ public class BookingFormView extends JPanel {
             public void propertyChange(PropertyChangeEvent evt) {
                 SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
                 try {
-                    checkInDate = dateFormat.parse(checkInDatePicker.getJFormattedTextField().getText());
+                    selectedCheckInDate = dateFormat.parse(checkInDatePicker.getJFormattedTextField().getText());
                 } catch (ParseException ex) {
                     ex.printStackTrace();
                 }
-                updateRoomList();
+                updateRoomList(booking);
             }
         });
 
@@ -197,11 +204,11 @@ public class BookingFormView extends JPanel {
             public void propertyChange(PropertyChangeEvent evt) {
                 SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
                 try {
-                    checkOutDate = dateFormat.parse(checkOutDatePicker.getJFormattedTextField().getText());
+                    selectedCheckOutDate = dateFormat.parse(checkOutDatePicker.getJFormattedTextField().getText());
                 } catch (ParseException ex) {
                     ex.printStackTrace();
                 }
-                updateRoomList();
+                updateRoomList(booking);
             }
         });
 
@@ -226,7 +233,7 @@ public class BookingFormView extends JPanel {
         initializeComboBox();
         initializeButtons();
         layoutComponents();
-        setupDateConstraints();
+        //setupDateConstraints();
     }
 
     private void initializeFields() {
@@ -256,6 +263,33 @@ public class BookingFormView extends JPanel {
         checkOutModel.setDate(tomorrow.get(Calendar.YEAR), tomorrow.get(Calendar.MONTH), tomorrow.get(Calendar.DAY_OF_MONTH));
         checkOutModel.setSelected(true);
         checkOutDatePicker = new JDatePickerImpl(new JDatePanelImpl(checkOutModel, p), new DateLabelFormatter());
+
+        // Add a listener to checkOutModel to ensure the selected date is not before the check-in date
+        checkInModel.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if ("value".equals(evt.getPropertyName())) {
+                    Date selectedDate = (Date) evt.getNewValue();
+                    if (selectedDate.before(new Date())) {
+                        checkInModel.setValue(new Date());
+                    } else if (selectedDate.after(checkOutModel.getValue())) {
+                        checkOutModel.setDate(selectedDate.getYear() + 1900, selectedDate.getMonth(), selectedDate.getDate() + 1);
+                    }
+                }
+            }
+        });
+
+        checkOutModel.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if ("value".equals(evt.getPropertyName())) {
+                    Date selectedDate = (Date) evt.getNewValue();
+                    if (selectedDate.before(checkInModel.getValue())) {
+                        checkOutModel.setValue(checkInModel.getValue());
+                    }
+                }
+            }
+        });
     }
 
 
@@ -288,9 +322,9 @@ public class BookingFormView extends JPanel {
     }
 
     private void initializeComboBox() {
-        roomComboBox = new JComboBox<>();
+        roomComboBox = new JComboBox<Room>();
         for (Room room : rooms) {
-            roomComboBox.addItem(String.valueOf(room.getRoomNumber()));
+            roomComboBox.addItem(room);
         }
         AutoCompleteDecorator.decorate(roomComboBox);
     }
@@ -386,7 +420,7 @@ public class BookingFormView extends JPanel {
         gbc.gridx = 1;
         add(roomPanel, gbc);
 
-        // Delete Button
+        // Cancel Button
         gbc.gridx = 1;
         gbc.gridy = 7;
         gbc.gridwidth = 1;
@@ -443,38 +477,12 @@ public class BookingFormView extends JPanel {
         numberOfAdultsSpinner.setEnabled(isBooked);
         numberOfChildrenSpinner.setEnabled(isBooked);
         roomComboBox.setEnabled(isBooked);
-    }
 
-
-    private void setupDateConstraints() {
-        checkInDatePicker.addPropertyChangeListener(evt -> {
-            if ("date".equals(evt.getPropertyName())) {
-                adjustCheckOutDate();
-            }
-        });
-
-        checkOutDatePicker.addPropertyChangeListener(evt -> {
-            if ("date".equals(evt.getPropertyName())) {
-                Date checkInDate = ((UtilDateModel) checkInDatePicker.getModel()).getValue();
-                Date checkOutDate = ((UtilDateModel) checkOutDatePicker.getModel()).getValue();
-                if (checkOutDate != null && checkInDate != null && !checkOutDate.after(checkInDate)) {
-                    Calendar c = getInstance();
-                    c.setTime(checkInDate);
-                    c.add(Calendar.DATE, 1);  // Ensure check-out is at least one day after check-in
-                    ((UtilDateModel) checkOutDatePicker.getModel()).setValue(c.getTime());
-                }
-            }
-        });
-    }
-
-    private void adjustCheckOutDate() {
-        Date checkInDate = ((UtilDateModel) checkInDatePicker.getModel()).getValue();
-        Date checkOutDate = ((UtilDateModel) checkOutDatePicker.getModel()).getValue();
-        if (checkOutDate != null && checkInDate != null && !checkOutDate.after(checkInDate)) {
-            Calendar c = getInstance();
-            c.setTime(checkInDate);
-            c.add(Calendar.DATE, 1);  // Add one day
-            ((UtilDateModel) checkOutDatePicker.getModel()).setValue(c.getTime());
+        // If the Submit and Cancel buttons are not visible, move the Back button to the Cancel button's place
+        if (!submitButton.isVisible() && !cancelButton.isVisible()) {
+            GridBagConstraints gbc = ((GridBagLayout) getLayout()).getConstraints(backButton);
+            gbc.gridy = 7;
+            ((GridBagLayout) getLayout()).setConstraints(backButton, gbc);
         }
     }
 
@@ -487,27 +495,22 @@ public class BookingFormView extends JPanel {
         enteredNumberOfChildren = (int) numberOfChildrenSpinner.getValue();
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         try {
-            checkInDate = dateFormat.parse(checkInDatePicker.getJFormattedTextField().getText());//
-            checkOutDate = dateFormat.parse(checkOutDatePicker.getJFormattedTextField().getText());//
+            selectedCheckInDate = dateFormat.parse(checkInDatePicker.getJFormattedTextField().getText());//
+            selectedCheckOutDate = dateFormat.parse(checkOutDatePicker.getJFormattedTextField().getText());//
         } catch (ParseException ex) {
             ex.printStackTrace();
             // Handle date parsing error, if necessary
             return;
         }
         selectedRoom = (Room) roomComboBox.getSelectedItem();
-        int selectedRoomNumber = selectedRoom.getRoomNumber();
-        selectedRoom = rooms.stream()
-                .filter(room -> room.getRoomNumber() == selectedRoomNumber)
-                .findFirst()
-                .orElse(null);
     }
 
     private void updateBooking(Booking booking) {
         // Check if there are any changes to save
         if (booking.getGuestFirstName().equals(enteredGuestFirstName) &&
                 booking.getGuestLastName().equals(enteredGuestLastName) &&
-                booking.getCheckInDate().equals(checkInDate) &&
-                booking.getCheckOutDate().equals(checkOutDate) &&
+                booking.getCheckInDate().equals(selectedCheckInDate) &&
+                booking.getCheckOutDate().equals(selectedCheckOutDate) &&
                 booking.getNumberOfAdults() == enteredNumberOfAdults &&
                 booking.getNumberOfChildren() == enteredNumberOfChildren &&
                 booking.getRoom().equals(selectedRoom)) {
@@ -518,8 +521,8 @@ public class BookingFormView extends JPanel {
         // If there are changes, update the booking
         booking.setGuestFirstName(enteredGuestFirstName);
         booking.setGuestLastName(enteredGuestLastName);
-        booking.setCheckInDate(checkInDate);
-        booking.setCheckOutDate(checkOutDate);
+        booking.setCheckInDate(selectedCheckInDate);
+        booking.setCheckOutDate(selectedCheckOutDate);
         booking.setNumberOfAdults(enteredNumberOfAdults);
         booking.setNumberOfChildren(enteredNumberOfChildren);
         booking.setRoom(selectedRoom);
@@ -533,8 +536,8 @@ public class BookingFormView extends JPanel {
         Booking newBooking = new Booking(
                 enteredGuestFirstName,
                 enteredGuestLastName,
-                checkInDate,
-                checkOutDate,
+                selectedCheckInDate,
+                selectedCheckOutDate,
                 enteredNumberOfAdults,
                 enteredNumberOfChildren,
                 selectedRoom,
@@ -553,7 +556,7 @@ public class BookingFormView extends JPanel {
         checkOutDatePicker.getModel().setSelected(true);
         numberOfAdultsSpinner.setValue(booking.getNumberOfAdults());
         numberOfChildrenSpinner.setValue(booking.getNumberOfChildren());
-        roomComboBox.setSelectedItem(String.valueOf(booking.getRoom().getRoomNumber()));
+        roomComboBox.setSelectedItem(booking.getRoom());
     }
 
     private void clearForm() {
@@ -569,27 +572,68 @@ public class BookingFormView extends JPanel {
         numberOfAdultsSpinner.setValue(1);
         numberOfChildrenSpinner.setValue(0);
         roomComboBox.setSelectedIndex(0);
-
-        updateRoomList();
     }
 
     private boolean hasChanges(Booking booking) {
+        // identify the which camp has changed and print in console
+        if (!booking.getGuestFirstName().equals(enteredGuestFirstName)) {
+            System.out.println("Guest First Name has changed");
+        }
+        if (!booking.getGuestLastName().equals(enteredGuestLastName)) {
+            System.out.println("Guest Last Name has changed");
+        }
+        if (!booking.getCheckInDate().equals(selectedCheckInDate)) {
+            System.out.println("Check In Date has changed");
+        }
+        if (!booking.getCheckOutDate().equals(selectedCheckOutDate)) {
+            System.out.println("Check Out Date has changed");
+        }
+        if (booking.getNumberOfAdults() != enteredNumberOfAdults) {
+            System.out.println("Number of Adults has changed");
+        }
+        if (booking.getNumberOfChildren() != enteredNumberOfChildren) {
+            System.out.println("Number of Children has changed");
+        }
+        if (!booking.getRoom().equals(selectedRoom)) {
+            System.out.println("Room has changed");
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        String formattedCheckInDate = sdf.format(selectedCheckInDate);
+        String formattedCheckOutDate = sdf.format(selectedCheckOutDate);
+        String formattedBookingCheckInDate = sdf.format(booking.getCheckInDate());
+        String formattedBookingCheckOutDate = sdf.format(booking.getCheckOutDate());
+
         return !booking.getGuestFirstName().equals(enteredGuestFirstName) ||
                 !booking.getGuestLastName().equals(enteredGuestLastName) ||
-                !booking.getCheckInDate().equals(checkInDate) ||
-                !booking.getCheckOutDate().equals(checkOutDate) ||
+                !formattedBookingCheckInDate.equals(formattedCheckInDate) ||
+                !formattedBookingCheckOutDate.equals(formattedCheckOutDate) ||
                 booking.getNumberOfAdults() != enteredNumberOfAdults ||
                 booking.getNumberOfChildren() != enteredNumberOfChildren ||
                 !booking.getRoom().equals(selectedRoom);
     }
 
-    private void updateRoomList() {
+    private void updateRoomList(Booking booking) {
         List<Room> suitableAndAvailableRooms = roomDao.getSuitableAndAvailableRooms(
-                (int) numberOfAdultsSpinner.getValue(),
-                (int) numberOfChildrenSpinner.getValue(),
-                checkInDate,
-                checkOutDate
+                enteredNumberOfAdults,
+                enteredNumberOfChildren,
+                selectedCheckInDate,
+                selectedCheckOutDate
         );
+
+        if (booking != null && suitableAndAvailableRooms.contains(booking.getRoom())) {
+            suitableAndAvailableRooms.add(booking.getRoom());
+        }
+
+        // Sort the rooms by room number
+        suitableAndAvailableRooms.sort(Comparator.comparing(Room::getNumber));
+
         roomComboBox.setModel(new DefaultComboBoxModel(suitableAndAvailableRooms.toArray()));
+
+        if (selectedRoom != null && suitableAndAvailableRooms.contains(selectedRoom)) {
+            roomComboBox.setSelectedItem(selectedRoom);
+        } else if (!suitableAndAvailableRooms.isEmpty()) {
+            roomComboBox.setSelectedItem(suitableAndAvailableRooms.get(0));
+        }
     }
 }

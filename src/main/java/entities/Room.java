@@ -10,7 +10,7 @@ public class Room {
     @Id
     @GeneratedValue
     private int id;
-    private int roomNumber;
+    private int number;
     private int adultsCapacity;
     private int childrenCapacity;
     private float price;
@@ -18,16 +18,16 @@ public class Room {
     public Room(){
     }
 
-    public Room(int roomNumber, int adultsCapacity, int childrenCapacity, float price){
-        this.roomNumber = roomNumber;
+    public Room(int number, int adultsCapacity, int childrenCapacity, float price){
+        this.number = number;
         this.adultsCapacity = adultsCapacity;
         this.childrenCapacity = childrenCapacity;
         this.price = price;
     }
 
-    public Room(int id, int roomNumber, int adultsCapacity, int childrenCapacity, float price){
+    public Room(int id, int number, int adultsCapacity, int childrenCapacity, float price){
         this.id = id;
-        this.roomNumber = roomNumber;
+        this.number = number;
         this.adultsCapacity = adultsCapacity;
         this.childrenCapacity = childrenCapacity;
         this.price = price;
@@ -41,12 +41,12 @@ public class Room {
         this.id = id;
     }
 
-    public int getRoomNumber() {
-        return roomNumber;
+    public int getNumber() {
+        return number;
     }
 
-    public void setRoomNumber(int roomNumber) {
-        this.roomNumber = roomNumber;
+    public void seNumber(int roomNumber) {
+        this.number = roomNumber;
     }
 
     public int getAdultsCapacity() {
@@ -78,16 +78,16 @@ public class Room {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Room room = (Room) o;
-        return roomNumber == room.roomNumber && adultsCapacity == room.adultsCapacity && childrenCapacity == room.childrenCapacity && Float.compare(price, room.price) == 0;
+        return number == room.number && adultsCapacity == room.adultsCapacity && childrenCapacity == room.childrenCapacity && Float.compare(price, room.price) == 0;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(roomNumber, adultsCapacity, childrenCapacity, price);
+        return Objects.hash(number, adultsCapacity, childrenCapacity, price);
     }
 
     @Override
     public String toString() {
-        return String.valueOf(roomNumber);
+        return String.valueOf(number);
     }
 }

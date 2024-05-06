@@ -1,4 +1,4 @@
-package processes;
+package util;
 
 import entities.Booking;
 import entities.Room;
@@ -22,5 +22,19 @@ public class RoomBookingSystem {
 
             .sorted(Comparator.comparing(Room::getPrice))
             .collect(Collectors.toList());
+    }
+
+    public float calculateTotalPrice(Room room, Date checkInDate, Date checkOutDate) {
+        long checkInTime = checkInDate.getTime();
+        long checkOutTime = checkOutDate.getTime();
+        long differenceInTime = checkOutTime - checkInTime;
+
+        // Convert the difference in time from milliseconds to days and round it
+        long differenceInDays = Math.round((double) differenceInTime / (24 * 60 * 60 * 1000));
+
+        float pricePerNight = room.getPrice();
+        float totalPrice = pricePerNight * differenceInDays;
+
+        return totalPrice;
     }
 }

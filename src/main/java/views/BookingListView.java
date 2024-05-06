@@ -54,7 +54,7 @@ public class BookingListView extends JPanel {
             Booking booking = bookings.get(i);
             data[i][0] = booking.getGuestFirstName();
             data[i][1] = booking.getGuestLastName();
-            data[i][2] = (booking.getRoom() != null) ? booking.getRoom().getRoomNumber() : "";
+            data[i][2] = (booking.getRoom() != null) ? booking.getRoom().getNumber() : "";
             data[i][3] = dateFormat.format(booking.getCheckInDate());
             data[i][4] = dateFormat.format(booking.getCheckOutDate());
             data[i][5] = (booking.getStatus() != null) ? booking.getStatus().getState() : "";
@@ -62,24 +62,28 @@ public class BookingListView extends JPanel {
 
         // Initialize table
         model = new MyDefaultTableModel(columnNames, 0);
-        table = new JTable(model); // Use MyDefaultTableModel
+        table = new JTable(model);
+        // Add dividers between rows
+        table.setShowHorizontalLines(true);
+        table.setShowVerticalLines(true);
+        table.setGridColor(Color.LIGHT_GRAY);
         table.addMouseListener(new java.awt.event.MouseAdapter() {
-                public void mouseClicked(java.awt.event.MouseEvent evt) {
-                    int row = table.rowAtPoint(evt.getPoint());
-                    int col = table.columnAtPoint(evt.getPoint());
-                    if (row >= 0 && col >= 0) {
-                        // Retrieve the Booking object from the bookings list
-                        Booking booking = bookings.get(row);
-                        // Open BookingFormView with selected booking
-                        BookingFormView bookingFormView = new BookingFormView(cardLayout, parentPanel, booking);
-                        parentPanel.add(bookingFormView, "BookingForm");
-                        cardLayout.show(parentPanel, "BookingForm");
-                    }
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                int row = table.rowAtPoint(evt.getPoint());
+                int col = table.columnAtPoint(evt.getPoint());
+                if (row >= 0 && col >= 0 && row < bookings.size()) {
+                    // Retrieve the Booking object from the bookings list
+                    Booking booking = bookings.get(row);
+                    // Open BookingFormView with selected booking
+                    BookingFormView bookingFormView = new BookingFormView(cardLayout, parentPanel, booking);
+                    parentPanel.add(bookingFormView, "BookingForm");
+                    cardLayout.show(parentPanel, "BookingForm");
                 }
-            });
+            }
+        });
 
 
-            JScrollPane scrollPane = new JScrollPane(table);
+        JScrollPane scrollPane = new JScrollPane(table);
         add(scrollPane, BorderLayout.CENTER);
 
         // Add components like table, buttons, etc.
@@ -141,7 +145,7 @@ public class BookingListView extends JPanel {
             Object[] rowData = {
                     booking.getGuestFirstName(),
                     booking.getGuestLastName(),
-                    (booking.getRoom() != null) ? booking.getRoom().getRoomNumber() : "",
+                    (booking.getRoom() != null) ? booking.getRoom().getNumber() : "",
                     dateFormat.format(booking.getCheckInDate()),
                     dateFormat.format(booking.getCheckOutDate()),
                     (booking.getStatus() != null) ? booking.getStatus().getState() : ""
@@ -179,7 +183,7 @@ public class BookingListView extends JPanel {
             Object[] rowData = {
                     booking.getGuestFirstName(),
                     booking.getGuestLastName(),
-                    (booking.getRoom() != null) ? booking.getRoom().getRoomNumber() : "",
+                    (booking.getRoom() != null) ? booking.getRoom().getNumber() : "",
                     dateFormat.format(booking.getCheckInDate()),
                     dateFormat.format(booking.getCheckOutDate()),
                     (booking.getStatus() != null) ? booking.getStatus().getState() : ""

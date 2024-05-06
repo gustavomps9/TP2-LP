@@ -56,7 +56,7 @@ public class HomepageView extends JPanel {
                 .map(b -> new Object[]{
                         b.getGuestFirstName(),
                         b.getGuestLastName(),
-                        b.getRoom().getRoomNumber(),
+                        b.getRoom().getNumber(),
                         dateFormat.format(isCheckIn ? b.getCheckOutDate() : b.getCheckInDate()),
                         createButton(b, isCheckIn)
                 })
@@ -79,17 +79,28 @@ public class HomepageView extends JPanel {
         table.setFillsViewportHeight(true);
         table.setDefaultRenderer(JButton.class, new ButtonRenderer());
         table.setDefaultEditor(JButton.class, new ButtonEditor(new JCheckBox()));
+        //set row height
+        table.setRowHeight((int) (table.getRowHeight() * 1.1));
+        // show dividers between rows
+        table.setShowVerticalLines(false);
+        table.setShowHorizontalLines(true);
+        table.setGridColor(Color.LIGHT_GRAY);
         return table;
     }
 
     private JButton createButton(Booking booking, boolean isCheckIn) {
         JButton button = new JButton(isCheckIn ? "Check In" : "Check Out");
         button.addActionListener(e -> {
-            // Update booking status
-            booking.setStatus(statusDao.getByState(isCheckIn ? "Checked In" : "Checked Out"));
-            bookingDao.update(booking);
-            // Refresh the table
-            refreshTables();
+            // Show a confirmation dialog
+            int response = JOptionPane.showConfirmDialog(null, "Are you sure you want to " + (isCheckIn ? "check in" : "check out") + "?", "Confirmation",
+                    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+            if (response == JOptionPane.YES_OPTION) {
+                // Update booking status
+                booking.setStatus(statusDao.getByState(isCheckIn ? "Checked In" : "Checked Out"));
+                bookingDao.update(booking);
+                // Refresh the table
+                refreshTables();
+            }
         });
         return button;
     }
