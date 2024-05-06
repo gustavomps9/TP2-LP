@@ -51,6 +51,7 @@ public class BookingFormView extends JPanel {
 
     public BookingFormView(CardLayout cardLayout, JPanel parentPanel, Booking booking) {
         initializeComponents();
+        updateRoomListOnFormLoad(booking);
 
         adjustButtonVisibility(booking);
         if (booking != null) {
@@ -407,13 +408,13 @@ public class BookingFormView extends JPanel {
         // Add roomComboBox to roomPanel with a width of 1 cell
         roomPanelGbc.gridx = 0;
         roomPanelGbc.gridy = 0;
-        roomPanelGbc.weightx = 0.3; // this can be adjusted as per your requirement
+        roomPanelGbc.weightx = 0.3;
         roomPanel.add(roomComboBox, roomPanelGbc);
 
         // Add roomPriceLabel to roomPanel with a width of 2 cells
         roomPriceLabel = new JLabel(" at ?€ per night");
         roomPanelGbc.gridx = 1;
-        roomPanelGbc.weightx = 0.7; // this can be adjusted as per your requirement
+        roomPanelGbc.weightx = 0.7;
         roomPanel.add(roomPriceLabel, roomPanelGbc);
 
         // Add roomPanel to the main panel
@@ -453,6 +454,30 @@ public class BookingFormView extends JPanel {
         gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.CENTER;
         add(checkOutButton, gbc);
+    }
+
+    private void updateRoomListOnFormLoad(Booking booking) {
+        // Lógica para atualizar a lista de quartos
+        List<Room> suitableAndAvailableRooms = roomDao.getSuitableAndAvailableRooms(
+                enteredNumberOfAdults,
+                enteredNumberOfChildren,
+                selectedCheckInDate,
+                selectedCheckOutDate
+        );
+
+        if (booking != null && suitableAndAvailableRooms.contains(booking.getRoom())) {
+            suitableAndAvailableRooms.add(booking.getRoom());
+        }
+
+        suitableAndAvailableRooms.sort(Comparator.comparing(Room::getNumber));
+
+        roomComboBox.setModel(new DefaultComboBoxModel(suitableAndAvailableRooms.toArray()));
+
+        if (selectedRoom != null && suitableAndAvailableRooms.contains(selectedRoom)) {
+            roomComboBox.setSelectedItem(selectedRoom);
+        } else if (!suitableAndAvailableRooms.isEmpty()) {
+            roomComboBox.setSelectedItem(suitableAndAvailableRooms.get(0));
+        }
     }
 
     private void adjustButtonVisibility(Booking booking) {

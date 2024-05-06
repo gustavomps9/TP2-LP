@@ -25,25 +25,25 @@ public class BookingApplication extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
+        // Set up a toolbar for navigation
+        JToolBar toolBar = new JToolBar();
+        toolBar.setFloatable(false);
+
         // Create buttons for navigation
         homeButton = new JButton("Home");
         homeButton.addActionListener(e -> showHomepage());
+        toolBar.add(homeButton);
 
         bookingsButton = new JButton("Bookings");
         bookingsButton.addActionListener(e -> showBookingList());
+        toolBar.add(bookingsButton);
 
         roomsButton = new JButton("Rooms");
         roomsButton.addActionListener(e -> showRoomList());
+        toolBar.add(roomsButton);
 
-        // Set up a panel for navigation
-        JPanel navPanel = new JPanel();
-        navPanel.setLayout(new BoxLayout(navPanel, BoxLayout.X_AXIS)); // Arrange buttons horizontally
-        navPanel.add(homeButton);
-        navPanel.add(bookingsButton);
-        navPanel.add(roomsButton);
-
-        // Add the navigation panel to the north (top) of the frame
-        add(navPanel, BorderLayout.NORTH);
+        // Add the toolbar to the top of the frame
+        add(toolBar, BorderLayout.NORTH);
 
         // CardLayout to switch between different views
         cardLayout = new CardLayout();
@@ -103,7 +103,7 @@ public class BookingApplication extends JFrame {
             createSampleData(roomDao, statusDao);
         }
 
-        FlatLightLaf.setup();
+        //FlatLightLaf.setup();
         SwingUtilities.invokeLater(() -> {
             new BookingApplication().setVisible(true);
         });
