@@ -431,6 +431,18 @@ public class BookingFormView extends JPanel {
 
         cancelButton.setVisible(!isNew && booking.getStatus().getState().equals("Booked"));
         submitButton.setVisible(isNew || booking.getStatus().getState().equals("Booked"));
+
+        // Disable UI components if the booking's state is not "Booked"
+        boolean isBooked = isNew || "Booked".equals(booking.getStatus().getState());
+        guestFirstNameField.setEnabled(isBooked);
+        guestLastNameField.setEnabled(isBooked);
+        checkInDatePicker.getComponent(0).setEnabled(isBooked);
+        checkOutDatePicker.getComponent(0).setEnabled(isBooked);
+        checkInDatePicker.getComponent(1).setEnabled(isBooked);
+        checkOutDatePicker.getComponent(1).setEnabled(isBooked);
+        numberOfAdultsSpinner.setEnabled(isBooked);
+        numberOfChildrenSpinner.setEnabled(isBooked);
+        roomComboBox.setEnabled(isBooked);
     }
 
 
