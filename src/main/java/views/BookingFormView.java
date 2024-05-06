@@ -639,6 +639,7 @@ public class BookingFormView extends JPanel {
     }
 
     private void updateRoomList(Booking booking) {
+        assignValues();
         List<Room> suitableAndAvailableRooms = roomDao.getSuitableAndAvailableRooms(
                 enteredNumberOfAdults,
                 enteredNumberOfChildren,

@@ -103,7 +103,7 @@ public class BookingApplication extends JFrame {
             createSampleData(roomDao, statusDao);
         }
 
-        //FlatLightLaf.setup();
+        FlatLightLaf.setup();
         SwingUtilities.invokeLater(() -> {
             new BookingApplication().setVisible(true);
         });
