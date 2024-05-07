@@ -64,8 +64,6 @@ public class BookingFormView extends JPanel {
             updateRoomList(null);
         }
 
-        roomPriceLabel.setText(" at " + selectedRoom.getPrice() + "€ per night");
-
         // Button actions
         submitButton.addActionListener(new ActionListener() {
             @Override
@@ -217,7 +215,7 @@ public class BookingFormView extends JPanel {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
-                    selectedRoom = (Room) roomComboBox.getSelectedItem();
+                    Room selectedRoom = (Room) e.getItem();
                     roomPriceLabel.setText(" at " + selectedRoom.getPrice() + "€ per night");
                 }
             }
@@ -473,10 +471,11 @@ public class BookingFormView extends JPanel {
 
         roomComboBox.setModel(new DefaultComboBoxModel(suitableAndAvailableRooms.toArray()));
 
-        if (selectedRoom != null && suitableAndAvailableRooms.contains(selectedRoom)) {
-            roomComboBox.setSelectedItem(selectedRoom);
-        } else if (!suitableAndAvailableRooms.isEmpty()) {
-            roomComboBox.setSelectedItem(suitableAndAvailableRooms.get(0));
+        Room selectedRoom = (Room) roomComboBox.getSelectedItem();
+        if (selectedRoom != null) {
+            roomPriceLabel.setText(" at " + selectedRoom.getPrice() + "€ per night");
+        } else {
+            roomPriceLabel.setText("No room selected");
         }
     }
 
@@ -656,10 +655,13 @@ public class BookingFormView extends JPanel {
 
         roomComboBox.setModel(new DefaultComboBoxModel(suitableAndAvailableRooms.toArray()));
 
-        if (selectedRoom != null && suitableAndAvailableRooms.contains(selectedRoom)) {
-            roomComboBox.setSelectedItem(selectedRoom);
-        } else if (!suitableAndAvailableRooms.isEmpty()) {
-            roomComboBox.setSelectedItem(suitableAndAvailableRooms.get(0));
+        Room selectedRoom = (Room) roomComboBox.getSelectedItem();
+        if (selectedRoom != null) {
+            roomPriceLabel.setText(" at " + selectedRoom.getPrice() + "€ per night");
+        } else {
+            roomPriceLabel.setText("No room selected");
         }
+
+        //
     }
 }
